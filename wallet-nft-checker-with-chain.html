@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wallet NFT Checker</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #eee;
+      font-family: monospace;
+      padding: 20px;
+    }
+    select, input {
+      padding: 8px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 12px;
+    }
+    .nft {
+      margin-top: 10px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🖼️ Wallet NFTs</h1>
+  <label for="chain">Select a Chain:</label>
+  <select id="chain">
+    <option value="1">Ethereum Mainnet</option>
+    <option value="137">Polygon</option>
+    <option value="56">BNB Chain</option>
+    <option value="42161">Arbitrum</option>
+    <option value="10">Optimism</option>
+    <option value="43114">Avalanche</option>
+  </select><br/>
+  <input type="text" id="wallet" placeholder="Enter Ethereum wallet address" />
+  <button onclick="checkNFTs()">Check NFTs</button>
+
+  <div id="output"></div>
+
+  <script>
+    async function checkNFTs() {
+      const wallet = document.getElementById('wallet').value;
+      const chain = document.getElementById('chain').value;
+      const output = document.getElementById('output');
+      output.innerHTML = 'Loading...';
+
+      const url = `https://api.covalenthq.com/v1/${chain}/address/${wallet}/balances_nft/?key=cqt_rQjxQxXbBKvhGp96d4p8H3FYhBCP`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data || !data.data || !data.data.items) {
+        output.innerHTML = 'Invalid response or wallet not found.';
+        return;
+      }
+
+      const nfts = data.data.items.filter(nft => nft.nft_data && nft.nft_data.length > 0);
+      output.innerHTML = `<h2>🎨 ${nfts.length} NFT Collections Found</h2>`;
+
+      nfts.forEach(nft => {
+        nft.nft_data.forEach(token => {
+          output.innerHTML += `
+            <div class="nft">
+              Contract Address: ${nft.contract_address}<br/>
+              Token ID: ${token.token_id}
+            </div>
+          `;
+        });
+      });
+    }
+  </script>
+</body>
+</html>
